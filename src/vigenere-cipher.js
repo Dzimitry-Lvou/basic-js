@@ -10,7 +10,7 @@ class VigenereCipheringMachine {
       throw new Error('Not implemented');
     }
     word = word.toUpperCase()
-    let wordLetters = word.replaceAll( /[^a-zA-Z]+/g, '').toUpperCase()
+    let wordLetters = word.replace(/[^a-zA-Z]+/g, '')
     let wordPos = this.getLettersPositions(wordLetters)
     let shift = this.getShift(word, key)
     let encryptedLetters = this.encryptLetters(wordPos, shift)
@@ -30,7 +30,7 @@ class VigenereCipheringMachine {
       throw new Error('Not implemented');
     }
     word = word.toUpperCase()
-    let wordLetters = word.replaceAll( /[^a-zA-Z]+/g, '').toUpperCase()
+    let wordLetters = word.replace(/[^a-zA-Z]+/g, '').toUpperCase()
     let wordPos = this.getEncryptedLettersPositions(wordLetters)
     let shift = this.getShift(word, key)
     let decryptedLetters = this.decryptLetters(wordPos, shift)
