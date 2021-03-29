@@ -1,63 +1,92 @@
 const CustomError = require("../extensions/custom-error");
 
 class VigenereCipheringMachine {
-  direction;
-  EN = 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  constructor(direct = true) {
+    this.isDirect = direct
+    this.alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  }
+  encrypt(word, key) {
+    if(word == undefined || key == undefined) {
+      throw new Error('Not implemented');
+    }
+    word = word.toUpperCase()
+    let wordLetters = word.replaceAll( /[^a-zA-Z]+/g, '').toUpperCase()
+    let wordPos = this.getLettersPositions(wordLetters)
+    let shift = this.getShift(word, key)
+    let encryptedLetters = this.encryptLetters(wordPos, shift)
 
-  encrypt(message, key) {
-    message = message.toUpperCase()
-    key = key.toUpperCase()
-    let shift = this.findShift(message, key)
-    let encryptedMessage = []
-    for (let i = 0; i < shift.length; i++) {
-      if(shift[i] != '-1') {
-        encryptedMessage.push(this.EN.charAt(shift[i] + this.EN.indexOf(message.charAt(i))))
-      }
-      else {
-        encryptedMessage.push(message.charAt(i))
+    word = word.split('')
+    for(let i = 0, j = 0; i < word.length; i++){
+      if(/[A-Z]/.test(word[i])) {
+        word[i] = encryptedLetters[j]
+        j++
       }
     }
+    
+    return this.isDirect ? word.join('') : word.reverse().join('')
+  }    
+  decrypt(word, key) {
+    if(word == undefined || key == undefined) {
+      throw new Error('Not implemented');
+    }
+    word = word.toUpperCase()
+    let wordLetters = word.replaceAll( /[^a-zA-Z]+/g, '').toUpperCase()
+    let wordPos = this.getEncryptedLettersPositions(wordLetters)
+    let shift = this.getShift(word, key)
+    let decryptedLetters = this.decryptLetters(wordPos, shift)
 
-    return encryptedMessage.join('')
-  }
-
-  decrypt(encryptedMessage, key) {
-    encryptedMessage = encryptedMessage.toUpperCase()
-    key = key.toUpperCase()
-    let shift = this.findShift(encryptedMessage, key)
-
-    let decryptedMessage = []
-    for (let i = 0; i < shift.length; i++) {
-      if(shift[i] != '-1') {
-        decryptedMessage.push(this.EN.charAt(this.EN.lastIndexOf(encryptedMessage.charAt(i)) - shift[i]))
-      }
-      else {
-        decryptedMessage.push(encryptedMessage.charAt(i))
+    word = word.split('')
+    for(let i = 0, j = 0; i < word.length; i++){
+      if(/[A-Z]/.test(word[i])) {
+        word[i] = decryptedLetters[j]
+        j++
       }
     }
-
-    return decryptedMessage.join('')
+    
+    return this.isDirect ? word.join('') : word.reverse().join('')
   }
-
-  findShift(message, key) {
-    const EN_ARR = this.EN.split('');
+  getFullKey(word, key) {
+    let fullKey = key
+    while (fullKey.length < word.length){
+      fullKey += fullKey
+    }
+    return fullKey.substr(0, word.length)
+  }
+  getShift(word, key){
+    let fullKey = this.getFullKey(word, key).toLowerCase()
     let shift = []
-
-    for ( ; key.length < message.length; ) {
-      key += key      
+    for (let i = 0; i < fullKey.length; i++) {
+      shift.push(fullKey.charCodeAt(i) - 'a'.charCodeAt(0))
     }
-    key = key.substring(0, message.length).split('')
-
-    for (let i = 0; i < key.length; i++) {
-      if (EN_ARR.includes(key[i])) shift.push(parseInt(EN_ARR.indexOf(key[i])))
-      else shift.push('-1')      
-    }
-
-    return shift;
+    return shift
   }
-
-  constructor (direct) {
-    this.direction = direct ? true : false;
+  getLettersPositions(wordLetters){
+    let lettersPos = []
+    for (let i = 0; i < wordLetters.length; i++) {
+      lettersPos.push(this.alphabet.indexOf(wordLetters[i]))
+    }
+    return lettersPos
+  }
+  getEncryptedLettersPositions(wordLetters){
+    let lettersPos = []
+    for (let i = 0; i < wordLetters.length; i++) {
+      lettersPos.push(this.alphabet.lastIndexOf(wordLetters[i]))
+    }
+    return lettersPos
+  }
+  encryptLetters(wordPos, shift){
+    let encryptedLetters = ''
+    for (let i = 0; i < wordPos.length; i++) {
+      encryptedLetters += (this.alphabet[wordPos[i] + shift[i]])
+    }
+    return encryptedLetters
+  }
+  decryptLetters(wordPos, shift){
+    let decryptedLetters = ''
+    for (let i = 0; i < wordPos.length; i++) {
+      decryptedLetters += (this.alphabet[wordPos[i] - shift[i]])
+    }
+    return decryptedLetters
   }
 }
 
